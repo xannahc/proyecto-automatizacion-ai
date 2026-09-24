@@ -1,0 +1,888 @@
+{
+  "name": "Agente de reservas",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=CONTEXTO TEMPORAL:\nHoy es {{ $now.toFormat('yyyy-MM-dd') }}. \nSi el usuario menciona un día relativo (ej. \"el viernes\", \"el sábado\", \"mañana\"), USA la fecha de hoy para calcular la fecha exacta en formato YYYY-MM-DD. Toma ese cálculo matemático como un DATO CONFIRMADO, no le pidas al usuario que lo vuelva a confirmar.\n\nEres un asistente virtual profesional para gestión de reservas. \nTu único objetivo es obtener 4 datos obligatorios: Nombre, Email, Fecha y Hora.\n\nREGLAS DE RAZONAMIENTO Y DEDUCCIÓN:\n1. ÚLTIMA PALABRA: Si el usuario cambia de opinión en el mismo mensaje (ej. \"el viernes... ah no, mejor el sábado\"), utiliza SIEMPRE la última decisión.\n2. HORA INTELIGENTE: Si el usuario usa formato de 24 horas (ej. \"21hs\", \"20:00\") o especifica \"de la tarde/noche\", conviértelo directamente a HH:MM. NO preguntes sobre el formato. SOLO debes preguntar si la hora es ambigua (ej. \"a las 5\" sin especificar nada más).\n3. CERO CORTESÍA INNECESARIA: Si con el mensaje ya lograste deducir los 4 datos claramente (nombre, correo válido, fecha calculada y hora clara), NO converses más, NO pidas confirmaciones. Pasa directamente a generar el JSON.\n\nSi realmente falta algún dato ambiguo o no proporcionado, pide SOLO lo que falta de manera amable.\n\nCIERRE DEL PROCESO:\nSOLAMENTE cuando tengas los 4 datos listos, tu ÚNICA respuesta debe ser el siguiente bloque JSON estricto, sin texto antes ni después:\n{\n  \"nombre\": \"[Nombre]\",\n  \"email\": \"[Correo]\",\n  \"fecha\": \"[YYYY-MM-DD]\",\n  \"hora\": \"[HH:MM]\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        272,
+        0
+      ],
+      "id": "f3919756-017d-4ebe-a57d-5c585d5ff516",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {
+          "maxTokens": 150
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        272,
+        208
+      ],
+      "id": "bf6ba41d-7eb8-466a-8749-ba5f8e91008b",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "We2lHbhg2oMiaUSO",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        32,
+        0
+      ],
+      "id": "3e9c0d65-6873-4dec-9502-ca677398e21c",
+      "name": "When chat message received",
+      "webhookId": "7dc4772b-3a45-41cc-b0b6-57703579309f"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        368,
+        -160
+      ],
+      "id": "5098670c-f6be-4516-b677-fd0690156f0a",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "967e27c4-0607-45e5-b84d-1f37ad5756b3",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": "=true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1264,
+        0
+      ],
+      "id": "0ed66f29-7e17-4016-a131-747791e5c082",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        208,
+        448
+      ],
+      "id": "fbe6ae2b-cc07-4300-835e-a63e2936877a",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "sendTo": "annahenriquez10@gmail.com",
+        "subject": "ALERTA: Error en el flujo de reservas",
+        "message": "=Hola Analía, el flujo automático de reservas acaba de fallar.  Detalle del error: {{ $json.execution.error.message }} Nodo donde ocurrió la falla: {{ $json.execution.lastNodeExecuted }}  Por favor, revisa n8n para solucionarlo.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        432,
+        448
+      ],
+      "id": "353eacf4-295e-4e09-8ff4-05c1c85441dc",
+      "name": "Notificar error",
+      "webhookId": "2962ad5f-e283-4d2b-aa60-e54e5dec47c2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "r9XYmulLAoZ8DBg4",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appEJKcnTPrTed8ki",
+          "mode": "list",
+          "cachedResultName": "Gestion de reserva",
+          "cachedResultUrl": "https://airtable.com/appEJKcnTPrTed8ki"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblE8LjJMlw9opYHL",
+          "mode": "list",
+          "cachedResultName": "Clientes",
+          "cachedResultUrl": "https://airtable.com/appEJKcnTPrTed8ki/tblE8LjJMlw9opYHL"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Nombre": "={{ JSON.parse($json.output).nombre }}",
+            "Email": "={{ JSON.parse($json.output).email }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Nombre",
+              "displayName": "Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Assignee",
+              "displayName": "Assignee",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Todo",
+                  "value": "Todo"
+                },
+                {
+                  "name": "In progress",
+                  "value": "In progress"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Attachments",
+              "displayName": "Attachments",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Reservas",
+              "displayName": "Reservas",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        752,
+        0
+      ],
+      "id": "f46a175c-6dfb-4a40-aaf2-485607b60ad4",
+      "name": "Enviar datos",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "4H8Z9dp2hisPawJe",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appEJKcnTPrTed8ki",
+          "mode": "list",
+          "cachedResultName": "Gestion de reserva",
+          "cachedResultUrl": "https://airtable.com/appEJKcnTPrTed8ki"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbltt2G3tmcN4lCnx",
+          "mode": "list",
+          "cachedResultName": "Reservas",
+          "cachedResultUrl": "https://airtable.com/appEJKcnTPrTed8ki/tbltt2G3tmcN4lCnx"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Clientes": "={{ [$json.id] }}",
+            "Estado": "Pendiente",
+            "Hora": "={{ JSON.parse($('AI Agent').item.json.output).hora }}",
+            "Fecha": "={{ JSON.parse($('AI Agent').item.json.output).fecha }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Id Reserva",
+              "displayName": "Id Reserva",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Hora",
+              "displayName": "Hora",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Pendiente",
+                  "value": "Pendiente"
+                },
+                {
+                  "name": "Procesado por IA",
+                  "value": "Procesado por IA"
+                },
+                {
+                  "name": "Aprobado por humano",
+                  "value": "Aprobado por humano"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Clientes",
+              "displayName": "Clientes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        0
+      ],
+      "id": "eb3307d3-6c91-4daa-9958-027fd87e9530",
+      "name": "Reserva de datos",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "4H8Z9dp2hisPawJe",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "annahenriquez10@gmail.com",
+        "subject": "Nueva solicitud de reserva - Acción requerida",
+        "message": "=Hola,\n\nTienes una nueva solicitud de reserva pendiente en el sistema.\n\nDATOS DEL CLIENTE:\n- Nombre: {{ JSON.parse($('AI Agent').item.json.output).nombre }}\n- Correo: {{ JSON.parse($('AI Agent').item.json.output).email }}\n\nDETALLES DE LA RESERVA:\n- Fecha: {{ JSON.parse($('AI Agent').item.json.output).fecha }}\n- Hora: {{ JSON.parse($('AI Agent').item.json.output).hora }}\n\n¿Deseas aprobar esta reserva?\n(Haz clic en uno de los enlaces que aparecen debajo para continuar).",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Aprobar",
+            "disapproveLabel": "Rechazar"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1072,
+        0
+      ],
+      "id": "f80d5950-60ca-4c37-bb57-871ee0040e25",
+      "name": "Confirmación de reserva",
+      "webhookId": "85428d9d-0665-4d7e-8b18-3cb20995fa24",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "r9XYmulLAoZ8DBg4",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Enviar datos').item.json.fields.Email }}",
+        "subject": "Tu reserva ha sido confirmada",
+        "message": "=Hola {{ JSON.parse($('AI Agent').item.json.output).nombre }},\"\n\"¡Buenas noticias! Tu reserva para el día {{ JSON.parse($('AI Agent').item.json.output).fecha }} a las {{ JSON.parse($('AI Agent').item.json.output).hora }} ha sido confirmada exitosamente.\"\n\"¡Te esperamos!",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1680,
+        -16
+      ],
+      "id": "1157ccc9-7a83-45c6-b2b6-447ae71c81ea",
+      "name": "Email de confirmación para cliente",
+      "webhookId": "3bb57293-2840-438b-88cf-ea24a142b825",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "r9XYmulLAoZ8DBg4",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Enviar datos').item.json.fields.Email }}",
+        "subject": "Actualización sobre tu solicitud de reserva",
+        "message": "=Hola {{ $('Enviar datos').item.json.fields.Nombre }} , lamentamos informarte que no tenemos disponibilidad para la fecha solicitada. ¡Esperamos verte pronto!",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1536,
+        240
+      ],
+      "id": "b0390f57-57ac-4f16-942e-38fd28d8e1d3",
+      "name": "Email de rechazo a cliente",
+      "webhookId": "5364d0b4-6373-403a-a423-9185dd18efe5",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "r9XYmulLAoZ8DBg4",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appEJKcnTPrTed8ki",
+          "mode": "list",
+          "cachedResultName": "Gestion de reserva",
+          "cachedResultUrl": "https://airtable.com/appEJKcnTPrTed8ki"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbltt2G3tmcN4lCnx",
+          "mode": "list",
+          "cachedResultName": "Reservas",
+          "cachedResultUrl": "https://airtable.com/appEJKcnTPrTed8ki/tbltt2G3tmcN4lCnx"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Reserva de datos').item.json.id }}",
+            "Estado": "Aprobado por humano"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Id Reserva",
+              "displayName": "Id Reserva",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Fecha y hora",
+              "displayName": "Fecha y hora",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Pendiente",
+                  "value": "Pendiente"
+                },
+                {
+                  "name": "Procesado por IA",
+                  "value": "Procesado por IA"
+                },
+                {
+                  "name": "Aprobado por humano",
+                  "value": "Aprobado por humano"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Clientes",
+              "displayName": "Clientes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1456,
+        -16
+      ],
+      "id": "df4c0608-44bd-4932-b206-c4c2b59118b2",
+      "name": "Reserva confirmada",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "4H8Z9dp2hisPawJe",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appEJKcnTPrTed8ki",
+          "mode": "list",
+          "cachedResultName": "Gestion de reserva",
+          "cachedResultUrl": "https://airtable.com/appEJKcnTPrTed8ki"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbltt2G3tmcN4lCnx",
+          "mode": "list",
+          "cachedResultName": "Reservas",
+          "cachedResultUrl": "https://airtable.com/appEJKcnTPrTed8ki/tbltt2G3tmcN4lCnx"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Estado": "Rechazado por humano",
+            "id": "={{ $('Reserva de datos').item.json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Id Reserva",
+              "displayName": "Id Reserva",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Hora",
+              "displayName": "Hora",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Pendiente",
+                  "value": "Pendiente"
+                },
+                {
+                  "name": "Rechazado por humano",
+                  "value": "Rechazado por humano"
+                },
+                {
+                  "name": "Aprobado por humano",
+                  "value": "Aprobado por humano"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Clientes",
+              "displayName": "Clientes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1376,
+        240
+      ],
+      "id": "e57cf886-838b-473c-b937-bb9639bb0f12",
+      "name": "Reserva rechazada",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "4H8Z9dp2hisPawJe",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "34f50bfc-64e7-4223-9c44-1e1e1a765cae",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "{",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        544,
+        0
+      ],
+      "id": "d59df1b1-471b-4798-9861-10cd0c35b383",
+      "name": "If1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Reserva confirmada",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reserva rechazada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Notificar error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar datos": {
+      "main": [
+        [
+          {
+            "node": "Reserva de datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reserva de datos": {
+      "main": [
+        [
+          {
+            "node": "Confirmación de reserva",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirmación de reserva": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reserva confirmada": {
+      "main": [
+        [
+          {
+            "node": "Email de confirmación para cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reserva rechazada": {
+      "main": [
+        [
+          {
+            "node": "Email de rechazo a cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Enviar datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "753e9828-b545-4c00-ad7f-2025178917e7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e0593385838eabade325444c3216aa5466fc1a19e8d2da55c48b4fbec6042d68"
+  },
+  "nodeGroups": [],
+  "id": "bctq3VdKwxko75Jr",
+  "tags": []
+}
