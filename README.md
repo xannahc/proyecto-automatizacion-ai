@@ -10,10 +10,10 @@ Este proyecto es un ecosistema de automatización que procesa solicitudes de res
 * Canal de Salida: Gmail (Notificaciones y validación HITL)
 
 ## Enlaces del Proyecto (Entregables)
-* Video Demostración: (https://drive.google.com/file/d/17JgJGb5lZSEAYBzw3ZvB-h0WufuPYpSK/view?usp=sharing)
-* Base de Datos: (https://airtable.com/invite/l?inviteId=invyE0saeiRA5JZ6Q&inviteToken=161c3c37647f499c4cde3b21f525093b6e21984ffc3f905303e743b8d8ab7b51&utm_medium=email&utm_source=product_team&utm_content=transactional-alerts)
-* Diagrama de Arquitectura: (https://drive.google.com/file/d/1qk-iNz854y3zi5tFnXYZki_wdH6ixsJG/view?usp=sharing)
-* Código del flujo:(https://drive.google.com/file/d/1Dnpdqfz7fR69BDv4Jom_nHncuzoz4psQ/view?usp=sharing)
+* Video Demostración: (https://drive.google.com/file/d/17JgJGb5lZSEAYBzw3ZvB-h0WufuPYpSK/view?usp=sharing) El peso del archivo no permite subirse al repositorio. Pero tiene los permisos para visualizarlo.
+* Base de Datos: https://airtable.com/appEJKcnTPrTed8ki/shrq6G0HbPGUJzQ9p
+* Diagrama de Arquitectura: Puede visualizarle en los archivos adjuntos del repositorio.
+* Código del flujo: Puede visualizarle en los archivos adjuntos del repositorio.
 
 ## Características Técnicas
 * Human-in-the-Loop: El flujo se pausa a la espera de la decisión de un agente humano (Aprobar/Rechazar) antes de actualizar la base de datos.
