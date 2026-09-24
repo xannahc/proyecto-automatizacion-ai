@@ -1,2 +1,2 @@
 # proyecto-automatizacion-ai
-Una automatización para crear un sistema de reservas con ia. 
+Sistema automatizado de reservas con IA, Airtable y Human-in-the-Loop
