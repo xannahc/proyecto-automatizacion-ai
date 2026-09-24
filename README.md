@@ -11,6 +11,7 @@ Este proyecto es un ecosistema de automatización que procesa solicitudes de res
 
 ## Enlaces del Proyecto (Entregables)
 * Video Demostración: (https://drive.google.com/file/d/17JgJGb5lZSEAYBzw3ZvB-h0WufuPYpSK/view?usp=sharing) El peso del archivo no permite subirse al repositorio. Pero tiene los permisos para visualizarlo.
+* Capturas de testeo: Se pueden visualizar una correspondiente al camino feliz y una al camino infeliz.
 * Base de Datos: https://airtable.com/appEJKcnTPrTed8ki/shrq6G0HbPGUJzQ9p
 * Diagrama de Arquitectura: Puede visualizarle en los archivos adjuntos del repositorio.
 * Código del flujo: Puede visualizarle en los archivos adjuntos del repositorio.
